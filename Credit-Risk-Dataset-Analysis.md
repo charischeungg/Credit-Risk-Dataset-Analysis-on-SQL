@@ -321,6 +321,7 @@ SELECT
 FROM scenario_impact
 ORDER BY expected_loss DESC;
 ```
+#### Results
 | scenario     | sector       | expected_loss | loan_count |
 |--------------|--------------|---------------|------------|
 | covid_like   | Financials   | 925,065,074   | 5023       |
@@ -383,7 +384,7 @@ ORDER BY expected_loss DESC;
 | baseline     | Consumer     | 69,044,201    | 5043       |
 | mild         | Retail       | 63,424,641    | 4951       |
 | baseline     | Retail       | 59,674,791    | 4951       |
-```
+
 
 #### Analysis
 * Financials and Real Estate dominate absolute loss exposure due to their size, but their loss escalation multiples are in line with the portfolio average.
@@ -392,3 +393,21 @@ ORDER BY expected_loss DESC;
 * Retail and Consumer are small but severe, meaning their absolute losses are low due to limited exposure, but their loss rates relative to size are high, warranting close monitoring.
 * Healthcare is uniquely sensitive to pandemic-type shocks, with covid_like being its worst-case scenario by a significant margin.
 * Utilities and Telecom act as portfolio stabilizers, maintaining lower and more stable loss projections across all scenarios.
+
+### Cohort Analysis of Credit Scores
+This table segments the portfolio by credit quality cohorts, ranging from highest quality (Super Prime) to lowest quality (Subprime). It shows how exposure, default probability, and risk concentration shift across these tiers. The pd_change_from_prev_cohort highlights the sharp deterioration in risk as credit quality declines, while overall_avg_pd_pct provides a benchmark against the portfolio average of 2.25%.
+#### Results
+| credit_cohort | loan_count | total_exposure | avg_pd_pct | pd_change_from_prev_cohort | overall_avg_pd_pct | risk_rank |
+|---------------|------------|----------------|------------|----------------------------|---------------------|-----------|
+| Super Prime (800+) | 2,572 | 8,274,195,016 | 0.0864 | -0.7039 | 2.2461 | 1 |
+| Prime (700-799) | 28,237 | 92,891,177,729 | 0.7903 | -3.7016 | 2.2461 | 2 |
+| Near Prime (600-699) | 18,689 | 62,022,114,020 | 4.4919 | -7.1014 | 2.2461 | 3 |
+| Subprime (<600) | 502 | 1,742,749,666 | 11.5933 | NULL | 2.2461 | 4 |
+#### Analysis
+The credit cohort breakdown reveals a well-diversified but risk-concentrated portfolio. The Prime segment (700–799) dominates, accounting for $92.9 billion (56% of total exposure) and representing the core of the book with a low average PD of just 0.79%. This segment provides stability and anchors the portfolio's overall risk profile.
+
+Super Prime (800+) , while the smallest by loan count, holds $8.3 billion with a negligible PD of 0.09%, representing the highest-quality, lowest-risk layer.
+
+The critical insight lies in the Near Prime (600–699) and Subprime (<600) cohorts. Although they represent only 19% and 0.5% of loan count respectively, they carry disproportionately high risk. Near Prime shows a PD of 4.49% — nearly six times that of Prime — while Subprime spikes to 11.59%, despite holding only $1.7 billion in exposure.
+
+The pd_change_from_prev_cohort column quantifies this risk cliff: moving from Prime to Near Prime increases PD by 3.70 percentage points, and from Near Prime to Subprime by 7.10 percentage points. This indicates that the portfolio experiences non-linear risk escalation once credit scores fall below 700.
