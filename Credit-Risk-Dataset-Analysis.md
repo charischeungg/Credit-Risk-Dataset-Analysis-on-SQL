@@ -27,5 +27,23 @@ ORDER BY ead DESC;
 </details>
 
 ### Sector Risk Profile
-#### Portfolio composition and inherent risk by industry. Higher average PD indicates riskier sectors, while credit score shows borrower quality distribution.
-
+#### Shows portfolio composition and inherent risk by industry. Higher average PD indicates riskier sectors, while credit score shows borrower quality distribution.
+```
+SELECT sector, COUNT(*) AS loan_count, AVG(pd_annual) AS avg_pd, AVG(credit_score) AS avg_credit_score
+FROM loan_portfolio
+GROUP BY sector
+ORDER BY loan_count DESC;
+```
+#### Results
+| sector | loan_count | avg_pd | avg_credit_score | 
+|---|---|---|---|
+| Energy	| 5132	| 0.023160882903005	| 714| 
+| Telecom	| 5077	| 0.0216962964218923	| 716| 
+| Consumer	| 5043	| 0.0215236313682699	| 714| 
+| Financials	| 5023	| 0.0223081520755852	| 714| 
+| Industrials	| 5012	| 0.0219149646568378	| 716| 
+| Healthcare	| 4982	| 0.0228557591519898	| 715| 
+| Utilities	| 4959	| 0.022074914903457	| 715| 
+| Technology	| 4959	| 0.0235746279305457	| 714| 
+| Retail	| 4951	| 0.0228694150975067	| 714| 
+| Real_Estate	| 4862	| 0.0226562871331607	| 714| 
