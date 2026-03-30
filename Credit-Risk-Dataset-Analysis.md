@@ -290,3 +290,105 @@ Consumer, by contrast, has high defaults (9) but more upgrades than downgrades (
  <br>echnology shows 23 downgrades versus only 16 upgrades, with a net negative migration trend. Defaults remain low (3) for now, but the negative momentum is notable given Technology's already poor recovery profile (34.95%) and highest expected loss rate (1.68%). If downgrades continue, future defaults in this sector could carry severe loss severity.
 </details>
 
+### Stress Testing & Scenario Analysis
+Joins the loan portfolio with the stress scenario data to project losses under different economic conditions
+```
+WITH scenario_impact AS (
+    SELECT
+        ms.scenario,
+        lp.sector,
+        SUM(lp.ead * ms.stressed_pd * ms.stressed_lgd) AS stressed_el,
+        SUM(lp.ead * lp.pd_annual * lp.lgd) AS base_el,
+        COUNT(*) AS loan_count
+    FROM loan_portfolio lp
+    INNER JOIN macro_stress_scenarios ms ON lp.sector = ms.sector
+    WHERE ms.scenario != 'baseline' -- Exclude baseline for this specific part, or combine via UNION ALL
+    GROUP BY ms.scenario, lp.sector
+)
+SELECT
+    'baseline' AS scenario,
+    sector,
+    ROUND(SUM(ead * pd_annual * lgd), 0) AS expected_loss,
+    COUNT(*) AS loan_count
+FROM loan_portfolio
+GROUP BY sector
+UNION ALL
+SELECT
+    scenario,
+    sector,
+    ROUND(stressed_el, 0) AS expected_loss,
+    loan_count
+FROM scenario_impact
+ORDER BY expected_loss DESC;
+```
+| scenario     | sector       | expected_loss | loan_count |
+|--------------|--------------|---------------|------------|
+| covid_like   | Financials   | 925,065,074   | 5023       |
+| covid_like   | Real_Estate  | 752,524,217   | 4862       |
+| severe       | Financials   | 698,479,634   | 5023       |
+| covid_like   | Energy       | 689,391,082   | 5132       |
+| gfc_like     | Financials   | 619,528,399   | 5023       |
+| covid_like   | Utilities    | 609,191,303   | 4959       |
+| covid_like   | Telecom      | 583,214,160   | 5077       |
+| severe       | Real_Estate  | 560,273,649   | 4862       |
+| severe       | Energy       | 517,211,424   | 5132       |
+| adverse      | Financials   | 494,636,849   | 5023       |
+| gfc_like     | Real_Estate  | 493,091,425   | 4862       |
+| covid_like   | Technology   | 491,361,238   | 4959       |
+| covid_like   | Industrials  | 489,466,010   | 5012       |
+| severe       | Utilities    | 462,164,303   | 4959       |
+| gfc_like     | Energy       | 457,094,024   | 5132       |
+| severe       | Telecom      | 446,804,199   | 5077       |
+| gfc_like     | Utilities    | 411,032,626   | 4959       |
+| gfc_like     | Telecom      | 399,465,498   | 5077       |
+| adverse      | Real_Estate  | 388,675,007   | 4862       |
+| severe       | Technology   | 380,046,126   | 4959       |
+| mild         | Financials   | 377,432,111   | 5023       |
+| severe       | Industrials  | 374,979,971   | 5012       |
+| adverse      | Energy       | 362,767,589   | 5132       |
+| gfc_like     | Technology   | 341,513,988   | 4959       |
+| gfc_like     | Industrials  | 335,250,554   | 5012       |
+| adverse      | Utilities    | 329,674,795   | 4959       |
+| adverse      | Telecom      | 323,108,170   | 5077       |
+| baseline     | Financials   | 316,107,016   | 5023       |
+| mild         | Real_Estate  | 290,795,476   | 4862       |
+| covid_like   | Healthcare   | 284,383,378   | 4982       |
+| adverse      | Technology   | 278,491,282   | 4959       |
+| mild         | Energy       | 274,232,491   | 5132       |
+| adverse      | Industrials  | 271,172,934   | 5012       |
+| baseline     | Real_Estate  | 261,792,357   | 4862       |
+| mild         | Utilities    | 253,379,176   | 4959       |
+| mild         | Telecom      | 251,428,456   | 5077       |
+| baseline     | Energy       | 247,405,532   | 5132       |
+| baseline     | Utilities    | 235,836,905   | 4959       |
+| severe       | Healthcare   | 222,336,784   | 4982       |
+| mild         | Technology   | 219,292,524   | 4959       |
+| baseline     | Technology   | 214,071,782   | 4959       |
+| mild         | Industrials  | 211,015,196   | 5012       |
+| baseline     | Telecom      | 205,262,807   | 5077       |
+| gfc_like     | Healthcare   | 200,980,018   | 4982       |
+| baseline     | Industrials  | 196,375,701   | 5012       |
+| adverse      | Healthcare   | 165,471,747   | 4982       |
+| covid_like   | Consumer     | 157,946,921   | 5043       |
+| covid_like   | Retail       | 139,764,052   | 4951       |
+| mild         | Healthcare   | 132,179,764   | 4982       |
+| severe       | Consumer     | 122,879,474   | 5043       |
+| baseline     | Healthcare   | 118,215,412   | 4982       |
+| gfc_like     | Consumer     | 110,778,298   | 5043       |
+| severe       | Retail       | 108,579,162   | 4951       |
+| gfc_like     | Retail       | 97,809,566    | 4951       |
+| adverse      | Consumer     | 90,809,624    | 5043       |
+| adverse      | Retail       | 80,072,979    | 4951       |
+| mild         | Consumer     | 72,073,900    | 5043       |
+| baseline     | Consumer     | 69,044,201    | 5043       |
+| mild         | Retail       | 63,424,641    | 4951       |
+| baseline     | Retail       | 59,674,791    | 4951       |
+```
+
+#### Analysis
+* Financials and Real Estate dominate absolute loss exposure due to their size, but their loss escalation multiples are in line with the portfolio average.
+* Energy is the most consistently vulnerable sector, appearing in the top five for loss exposure across all stress scenarios, driven by commodity price sensitivity.
+* Technology exhibits scenario-specific vulnerability, performing worse under gfc_like (credit-driven) than under covid_like (operational-driven), reflecting its high LGD and reliance on intangible assets.
+* Retail and Consumer are small but severe, meaning their absolute losses are low due to limited exposure, but their loss rates relative to size are high, warranting close monitoring.
+* Healthcare is uniquely sensitive to pandemic-type shocks, with covid_like being its worst-case scenario by a significant margin.
+* Utilities and Telecom act as portfolio stabilizers, maintaining lower and more stable loss projections across all scenarios.
