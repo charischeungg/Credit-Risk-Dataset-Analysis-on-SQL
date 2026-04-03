@@ -11,3 +11,5 @@ The analysis uses five interconnected datasets that provide a complete view of c
 | macro_stress_scenarios.csv | Simulates the impact of different macroeconomic shocks on portfolio risk metrics. | [View File](./data/raw/macro_stress_scenarios.csv) |
 | portfolio_metrics.csv | A time-series portfolio that shows the monthly aggregated portfolio metrics from 2015 to 2024. | [View File](./data/raw/portfolio_metrics.csv) |
 | vintage_analysis.csv | Tracks the performance of loans originated in each quarter over time.| [View File](./data/raw/vintage_analysis.csv) |
+
+Dataset Source:  [View Link](https://www.kaggle.com/datasets/sergionefedov/credit-risk-dataset-50k-loans-10-sectors?resource=download)
